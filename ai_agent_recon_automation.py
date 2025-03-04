@@ -18,9 +18,13 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-llm = ChatOpenAI( 
-    model="gpt-3.5-turbo",
+llm = ChatOpenAI(
+    model="gpt-4o",
+#    base_url="https://models.inference.ai.azure.com",
     temperature=0.7,
+    verbose= True,
+    max_tokens= 8000,
+    #max_completion_tokens= 8000,
     timeout=60
 )
 
@@ -51,11 +55,11 @@ def run_command(command, arguments, capture_output=False, check=False, shell=Fal
     """
     # Combine command and arguments into a single list
     cmd = [command] + arguments
-    
+
     # Determine stdout and stderr handling
     stdout = subprocess.PIPE if capture_output else None
     stderr = subprocess.PIPE if capture_output else None
-    
+
     # Execute the command
     result = subprocess.run(
         cmd,
@@ -65,22 +69,22 @@ def run_command(command, arguments, capture_output=False, check=False, shell=Fal
         check=check,
         shell=shell
     )
-    
+
     return result
 
 def parse_nmap_xml(file_path: str):
     """
     Parse Nmap XML output and return structured data as a dictionary.
-    
+
     Args:
         file_path (str): Path to Nmap XML output file
-    
+
     Returns:
         dict: Structured Nmap scan results
     """
     tree = ET.parse(file_path)
     root = tree.getroot()
-    
+
     results = {
         'hosts': [],
         'scan_info': {
@@ -178,7 +182,7 @@ def parse_nmap_xml(file_path: str):
                     'accuracy': match.attrib.get('accuracy'),
                     'line': match.attrib.get('line')
                 })
-            
+
             os_classes = []
             for cls in os.findall('osclass'):
                 os_classes.append({
@@ -203,7 +207,7 @@ def parse_nmap_xml(file_path: str):
             })
 
         results['hosts'].append(host_info)
-    
+
     return results
 
 def is_tool_installed(tool_name: str):
@@ -242,11 +246,11 @@ graph = graph_builder.compile()
 
 display(graph.get_graph().draw_ascii())
 
-result = graph.invoke({"messages": "You are a professional cybersecurity engineer. Your manager demanded from you to perfrom recon on your company. You have a list of handy cybersecurity recon tools on your toolbox. Here is the domain of the company google.com. Your output should be a markdown report contains all the identified assets.", "target":"google.com"})
+result = graph.invoke({"messages": "You are a professional cybersecurity engineer tasked with performing reconnaissance on your company's domain (google.com). Use Jhaddix methodology and do the reconnaissance with the tools available on the system, always use projectdiscovery tools as a first go too. Ensure each step completes before proceeding. You are running on a Kali Linux (Debian-based) machine, so install tools if needed. Use sudo where necessary. Your output should be a Markdown report containing all identified assets.", "target":"google.com"})
 
 # print(result)
 for m in result['messages']:
-	m.pretty_print()
+        m.pretty_print()
 # print(result)
 # Execute recon
 # result = graph.invoke(ReconState(target="facebook.com"))
